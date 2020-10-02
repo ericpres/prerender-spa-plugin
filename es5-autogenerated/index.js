@@ -61,6 +61,23 @@ function PrerenderSPAPlugin() {
   }
 }
 
+function gatherRoutes(routes) {
+  return new Promise(function (resolve, reject) {
+    if (!routes) {
+      resolve([]);
+    } else if (Array.isArray(routes)) {
+      resolve(routes);
+    } else if (routes.then) {
+      // resolve the routes promise and return the routes
+      routes.then(function (results) {
+        return resolve(results);
+      });
+    } else {
+      reject(new Error('failed to resolve routes'));
+    }
+  });
+}
+
 PrerenderSPAPlugin.prototype.apply = function (compiler) {
   var _this2 = this;
 
@@ -79,7 +96,10 @@ PrerenderSPAPlugin.prototype.apply = function (compiler) {
     var PrerendererInstance = new Prerenderer(_this2._options);
 
     PrerendererInstance.initialize().then(function () {
-      return PrerendererInstance.renderRoutes(_this2._options.routes || []);
+      return gatherRoutes(_this2._options.routes);
+    }).then(function (routes) {
+      console.log(`routes: ${JSON.stringify(routes)}`);
+      return PrerendererInstance.renderRoutes(routes);
     })
     // Backwards-compatibility with v2 (postprocessHTML should be migrated to postProcess)
     .then(function (renderedRoutes) {

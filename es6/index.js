@@ -51,6 +51,21 @@ function PrerenderSPAPlugin (...args) {
   }
 }
 
+function gatherRoutes (routes) {
+  return new Promise((resolve, reject) => {
+    if (!routes) {
+      resolve([])
+    } else if (Array.isArray(routes)) {
+      resolve(routes)
+    } else if (routes.then) {
+      // resolve the routes promise and return the routes
+      routes.then(results => resolve(results))
+    } else {
+      reject(new Error('failed to resolve routes'))
+    }
+  })
+}
+
 PrerenderSPAPlugin.prototype.apply = function (compiler) {
   const compilerFS = compiler.outputFileSystem
 
@@ -66,7 +81,11 @@ PrerenderSPAPlugin.prototype.apply = function (compiler) {
 
     PrerendererInstance.initialize()
       .then(() => {
-        return PrerendererInstance.renderRoutes(this._options.routes || [])
+        return gatherRoutes(this._options.routes)
+      })
+      .then((routes) => {
+        console.log(`routes: ${JSON.stringify(routes)}`)
+        return PrerendererInstance.renderRoutes(routes)
       })
       // Backwards-compatibility with v2 (postprocessHTML should be migrated to postProcess)
       .then(renderedRoutes => this._options.postProcessHtml
