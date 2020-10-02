@@ -51,6 +51,8 @@ function PrerenderSPAPlugin (...args) {
   }
 }
 
+let gatheredRoutes = null
+
 function gatherRoutes (routes) {
   return new Promise((resolve, reject) => {
     if (!routes) {
@@ -58,8 +60,14 @@ function gatherRoutes (routes) {
     } else if (Array.isArray(routes)) {
       resolve(routes)
     } else if (routes.then) {
-      // resolve the routes promise and return the routes
-      routes.then(results => resolve(results))
+      if (gatheredRoutes) {
+        resolve(gatheredRoutes)
+      } else {
+        routes.then((results) => {
+          gatheredRoutes = results
+          resolve(gatheredRoutes)
+        })
+      }
     } else {
       reject(new Error('failed to resolve routes'))
     }
