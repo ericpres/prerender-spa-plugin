@@ -22,7 +22,7 @@ function PrerenderSPAPlugin() {
 
   if (args.length === 1) {
     this._options = args[0] || {};
-
+    console.log(`[prerender-spa-plugin: ${JSON.stringify(this._options)}`);
     // Backwards-compatibility with v2
   } else {
     console.warn("[prerender-spa-plugin] You appear to be using the v2 argument-based configuration options. It's recommended that you migrate to the clearer object-based configuration system.\nCheck the documentation for more information.");
